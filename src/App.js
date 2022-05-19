@@ -7,11 +7,14 @@ import {
   Text,
   ListItem,
   Heading,
+  Checkbox,
+  useToast,
 } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useRef, useState, useEffect } from "react";
 import "./App.css";
 const App = () => {
+  const toast = useToast();
   const [note, setNote] = useState("");
   const [notes, setNotes] = useState([]);
 
@@ -36,7 +39,8 @@ const App = () => {
 
   const removeNote = (e, index) => {
     let i = notes.findIndex(
-      (ele, index, arr) => ele === e.currentTarget.nextSibling.innerHTML
+      (ele, index, arr) =>
+        ele === e.currentTarget.parentElement.querySelector("li").innerHTML
     );
     notes.splice(i, 1);
     marked.splice(i, 1);
@@ -73,9 +77,23 @@ const App = () => {
           onSubmit={(e) => {
             e.preventDefault();
             if (notes.includes(note)) {
-              alert("Note Already Exits📃...");
+              toast({
+                title: "Note Already Exits📃...",
+                status: "error",
+                duration: 1000,
+                isClosable: true,
+                position: "top",
+                variant: "subtle",
+              });
             } else if (note === "") {
-              alert("Please Enter Something✅...");
+              toast({
+                title: "Please Enter Something✅...",
+                status: "info",
+                duration: 1000,
+                isClosable: true,
+                position: "top",
+                variant: "subtle",
+              });
             } else {
               setNotes([note, ...notes]);
               setMarked([false, ...marked]);
@@ -111,7 +129,7 @@ const App = () => {
         </form>
       </Box>
       <List overflowX={"hidden"} color="white" marginTop={"200px"}>
-        <Box>
+        <Box margin={"0 20px"}>
           <AnimatePresence>
             {notes.map((note, index) => {
               return (
@@ -126,39 +144,50 @@ const App = () => {
                   }}
                 >
                   <Box
+                    backgroundColor={"#006d77"}
                     cursor="pointer"
                     mb={2}
                     display="flex"
                     alignItems={"center"}
-                    justifyContent="center"
+                    justifyContent="space-between"
+                    width={["80vw", "60vw"]}
+                    margin="10px auto"
+                    padding={"10px 15px"}
+                    borderRadius={10}
                   >
+                    <Checkbox
+                      size={"lg"}
+                      colorScheme="yellow"
+                      onChange={(e) => {
+                        console.log(marked);
+                        let temp = marked;
+                        temp[index] = !temp[index];
+                        setMarked([...temp]);
+                        e.currentTarget.style.checked = temp[index];
+                      }}
+                      marginRight={6}
+                      isChecked={marked[index]}
+                    />
+
+                    <ListItem
+                      fontSize={"1.5rem"}
+                      w={["55vw", "50vw"]}
+                      wordBreak="break-word"
+                      display={"inline"}
+                      textDecoration={marked[index] ? "line-through" : "none"}
+                      color={marked[index] ? "whiteAlpha.500" : "white"}
+                      transition="all 0.5s"
+                    >
+                      {note}
+                    </ListItem>
                     <Text
+                      marginLeft={6}
                       fontSize={"1.5rem"}
                       display={"inline"}
-                      marginRight={5}
                       onClick={(e) => removeNote(e, index)}
                     >
                       ❌
                     </Text>
-                    <ListItem
-                      fontSize={"1.5rem"}
-                      maxW={"45vw"}
-                      wordBreak="break-word"
-                      display={"inline"}
-                      textDecoration={marked[index] ? "line-through" : "none"}
-                      onClick={(e) => {
-                        let temp = marked;
-                        temp[index] = !temp[index];
-                        setMarked([...temp]);
-                        if (temp[index]) {
-                          e.currentTarget.style.textDecoration = "line-through";
-                        } else {
-                          e.currentTarget.style.textDecoration = "none";
-                        }
-                      }}
-                    >
-                      {note}
-                    </ListItem>
                   </Box>
                 </motion.div>
               );
